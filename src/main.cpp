@@ -8,13 +8,6 @@ ISR(ADC_vect){
 
 }
 
-// put function declarations here:
-
-
-
-
-
-
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -37,8 +30,6 @@ void setup() {
 
   val = mode(noisyData16, n);
   Serial.print("mode: "); Serial.println(val);
-
-
 }
 
 void loop() {
@@ -47,12 +38,5 @@ void loop() {
 }
 
 
-/*! "For each sample of x, the function computes the median of a 
-window composed of the sample and its six surrounding samples, 
-hree per side. It also estimates the standard deviation of each 
-sample about its window median using the median absolute deviation. 
-If a sample differs from the median by more than three standard 
-deviations, it is replaced with the median."*/
 
-float hampel(void);
 
