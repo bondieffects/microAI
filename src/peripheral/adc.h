@@ -28,13 +28,18 @@
     this interface.
 */
 
+enum Prescalers {
+    PRESCALER_64,
+
+};
+
 void ADC_Initialise( void );
 
 void ADC_Enable( void );
 
 void ADC_Disable( void );
 
-void ADC_ChannelSelect( ADC_POSINPUT positiveInput, ADC_NEGINPUT negativeInput );
+void ADC_ChannelSelect( uint8_t positiveInput, uint8_t negativeInput );
 
 void ADC_ConversionStart( void );
 
@@ -44,7 +49,6 @@ void ADC_EnterSleep( void );
 
 void ADC_Awake( void );
 
-//unit16_t analogueReadADCnoiseCancel(unit8_t pin)
 
 #ifdef __cplusplus  // Provide C++ Compatibility
 
