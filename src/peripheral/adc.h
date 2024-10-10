@@ -30,7 +30,7 @@
 
 enum Prescalers {
     PRESCALER_64,
-
+    PRESCALER_256,
 };
 
 void ADC_Initialise( void );
@@ -48,6 +48,19 @@ uint16_t ADC_ConversionResultGet( void );
 void ADC_EnterSleep( void );
 
 void ADC_Awake( void );
+
+void ADC_SetPrescaler(uint8_t prescaler) 
+{
+    switch (prescaler) {
+        case PRESCALER_64:
+            // set registers for a prescaler of 64
+            ADCSRA |= (1 << ADIE) | (1 << ADPS1) | (1 << ADPS0);
+            break;
+        case PRESCALER_256:
+            //
+            break;
+    }
+}
 
 
 #ifdef __cplusplus  // Provide C++ Compatibility
