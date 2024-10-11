@@ -1,10 +1,29 @@
+// *****************************************************************************
+// *****************************************************************************
+// Section: Included Files
+// *****************************************************************************
+// *****************************************************************************
+/* This section lists the other files that are included in this file.
+*/
 #include <statistics.h>
 
-float mean(uint16_t* x, int n) {
-  
+// *****************************************************************************
+// *****************************************************************************
+// Section: Statistics Implementation
+// *****************************************************************************
+// *****************************************************************************
+
+// *****************************************************************************
+
+/*! @brief Returns the mean of an array
+    @param x the input array
+    @param n the length of the array
+*/
+float mean(uint16_t* x, uint16_t n) {
+
   float sum = 0;
 
-  for (int i; i<n; i++) {
+  for (uint16_t i; i < n; i++) {
     sum+= x[i];
   }
   Serial.print("sum: "); Serial.println(sum);
@@ -12,12 +31,17 @@ float mean(uint16_t* x, int n) {
   return sum / n;
 }
 
-float variance(uint16_t* x, int n, float mean) {
+/*! @brief Returns the variance of an array
+    @param x the input array
+    @param n the length of the array
+    @param mean the mean of the array
+*/
+float variance(uint16_t* x, uint16_t n, float mean) {
 
   float var = 0;
 
   // Step 2: Calculate the variance
-  for (int i = 0; i < n; i++) {
+  for (uint16_t i = 0; i < n; i++) {
       var += (x[i] - mean) * (x[i] - mean);
   }
   var /= n; // For population variance
@@ -26,23 +50,29 @@ float variance(uint16_t* x, int n, float mean) {
   return var;
 }
 
+/*! @brief Calculates the standard deviation of a variance
+    @param the variance of the array
+*/
 float stddev(float variance)
 {
   return sqrt(variance);
 }
 
-// Comparison function for qsort
+/*! @brief Comparison function for qsort
+*/
 int compare(const void* a, const void* b)
 {
     return (*(int*)a - *(int*)b);
 }
 
-
-// Function to find the median of the array
-float median(uint16_t* x, int n)
+/*! @brief Returns the median of an array
+    @param x the input array
+    @param n the length of the input array
+*/
+float median(uint16_t* x, uint16_t n)
 {
     // Sort the array in ascending order
-    qsort(x, n, sizeof(int), compare);
+    qsort(x, n, sizeof(uint16_t), compare);
 
     // If the size of the array is even, return the average
     // of the two middle elements
@@ -56,8 +86,11 @@ float median(uint16_t* x, int n)
     }
 }
 
-// mode
-float mode(uint16_t *x, int n) {
+/*! @brief Returns the mode of an array
+    @param x the input array
+    @param n the length of the input array
+*/
+float mode(uint16_t *x, uint16_t n) {
   // Sort the array
   qsort(x, n, sizeof(uint16_t), compare);
 
@@ -67,7 +100,7 @@ float mode(uint16_t *x, int n) {
   int max_count = 1;
 
   // Iterate through the sorted array to find the mode
-  for (int i = 1; i < n; ++i) {
+  for (uint16_t i = 1; i < n; ++i) {
       if (x[i] == x[i - 1]) {
           // Increment the count if the current element is
           // equal to the previous one
@@ -91,4 +124,56 @@ float mode(uint16_t *x, int n) {
   }
 
   return mode;
+}
+
+/*! @brief Hampel Outlier Filter:
+    Divide the input array into windows of N samples.
+    If a sample is more than 3 absolute deviations
+    from the window median, replace it with the window median.
+    @param x the input array
+    @param n the length of the input array
+    @returns a pointer to an output array
+*/
+uint16_t* hampel(uint16_t *x, uint16_t n) 
+{
+    // Instantiate an output array
+    uint16_t *out = (uint16_t *)malloc(n * sizeof(uint16_t));
+
+    // Instantiate an array for the window
+    uint16_t window[WINDOW_SIZE];
+    // Instantiate an array for the absolute deviation
+    uint16_t absDev[WINDOW_SIZE];
+
+    // Iterate through the input array
+    for (uint16_t i = 0; i < n; i++) {
+
+        // Populate the window
+        uint16_t count = 0;
+        for (uint16_t j = max(0, i - HALF_WINDOW_SIZE); j <= min(n - 1, i + HALF_WINDOW_SIZE); j++) {
+            window[count++] = x[j];
+        }
+
+        // Calculate the median of the window
+        float wMedian = median(window, count);
+
+        // Estimate the standard deviation of each sample
+        // about its window median using the median absolute deviation.
+        for (uint16_t j = 0; j < count; j++) {
+            absDev[j] = abs(window[j] - wMedian);       // Calculate the absolute deviations from the median
+        }
+
+        float medAbsDev = median(absDev, count);        // Calculate the median of the absolute deviations
+
+
+        // How many absolute deviations should the threshold be?
+        float threshold = THRESHOLD_MULTIPLIER * medAbsDev;
+
+        // If a sample differs from the median by more than the threshold, it is replaced with the median.
+        if (abs(x[i] - wMedian) > threshold) {
+            out[i] = wMedian;
+        }
+        else out[i] = x[i];
+    }
+
+    return out;
 }
