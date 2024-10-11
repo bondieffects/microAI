@@ -9,11 +9,21 @@
 
 // *****************************************************************************
 // *****************************************************************************
-// Section: Statistics Implementation
+// Section: Global Variables
 // *****************************************************************************
 // *****************************************************************************
+/* This section lists the other files that are included in this file.
+*/
+uint16_t *outputData;
 
 // *****************************************************************************
+// *****************************************************************************
+// Section: Interface Routines
+// *****************************************************************************
+// *****************************************************************************
+/* The following functions make up the methods (set of possible operations) of
+   this interface.
+*/
 
 /*! @brief Returns the mean of an array
     @param x the input array
@@ -71,18 +81,24 @@ int compare(const void* a, const void* b)
 */
 float median(uint16_t* x, uint16_t n)
 {
+    
+    uint16_t *temp = (uint16_t *)malloc(sizeof(uint16_t) * n);
+    for (uint16_t i = 0; i < n; i++) {
+        temp[i] = x[i];
+    }
+
     // Sort the array in ascending order
-    qsort(x, n, sizeof(uint16_t), compare);
+    qsort(temp, n, sizeof(uint16_t), compare);
 
     // If the size of the array is even, return the average
     // of the two middle elements
     if (n % 2 == 0) {
-        return (x[n / 2 - 1] + x[n / 2]) / 2.0;
+        return (temp[n / 2 - 1] + temp[n / 2]) / 2.0;
     }
     // If the size is odd, return the middle element
     // directly
     else {
-        return x[n / 2];
+        return temp[n / 2];
     }
 }
 
@@ -91,39 +107,45 @@ float median(uint16_t* x, uint16_t n)
     @param n the length of the input array
 */
 float mode(uint16_t *x, uint16_t n) {
-  // Sort the array
-  qsort(x, n, sizeof(uint16_t), compare);
 
-  // Initialize mode variables
-  int mode = x[0];
-  int curr_count = 1;
-  int max_count = 1;
+    uint16_t *temp = (uint16_t *)malloc(sizeof(uint16_t) * n);
+    for (uint16_t i = 0; i < n; i++) {
+        temp[i] = x[i];
+    }
 
-  // Iterate through the sorted array to find the mode
-  for (uint16_t i = 1; i < n; ++i) {
-      if (x[i] == x[i - 1]) {
-          // Increment the count if the current element is
-          // equal to the previous one
-          ++curr_count;
-      }
-      else {
-          // Check if the count of the previous element is
-          // greater than the maximum count
-          if (curr_count > max_count) {
-              max_count = curr_count;
-              mode = x[i - 1];
-          }
-          // Reset the count for the current element
-          curr_count = 1;
-      }
-  }
+    // Sort the array
+    qsort(temp, n, sizeof(uint16_t), compare);
 
-  // Check the count of the last element
-  if (curr_count > max_count) {
-      mode = x[n - 1];
-  }
+    // Initialize mode variables
+    int mode = temp[0];
+    int curr_count = 1;
+    int max_count = 1;
 
-  return mode;
+    // Iterate through the sorted array to find the mode
+    for (uint16_t i = 1; i < n; ++i) {
+        if (temp[i] == temp[i - 1]) {
+            // Increment the count if the current element is
+            // equal to the previous one
+            ++curr_count;
+        }
+        else {
+            // Check if the count of the previous element is
+            // greater than the maximum count
+            if (curr_count > max_count) {
+                max_count = curr_count;
+                mode = temp[i - 1];
+            }
+            // Reset the count for the current element
+            curr_count = 1;
+        }
+    }
+
+    // Check the count of the last element
+    if (curr_count > max_count) {
+        mode = temp[n - 1];
+    }
+
+    return mode;
 }
 
 /*! @brief Hampel Outlier Filter:
@@ -134,11 +156,8 @@ float mode(uint16_t *x, uint16_t n) {
     @param n the length of the input array
     @returns a pointer to an output array
 */
-uint16_t* hampel(uint16_t *x, uint16_t n) 
+void hampel(uint16_t *x, uint16_t n) 
 {
-    // Instantiate an output array
-    uint16_t *out = (uint16_t *)malloc(n * sizeof(uint16_t));
-
     // Instantiate an array for the window
     uint16_t window[WINDOW_SIZE];
     // Instantiate an array for the absolute deviation
@@ -170,10 +189,9 @@ uint16_t* hampel(uint16_t *x, uint16_t n)
 
         // If a sample differs from the median by more than the threshold, it is replaced with the median.
         if (abs(x[i] - wMedian) > threshold) {
-            out[i] = wMedian;
+            outputData[i] = wMedian;
+            //Serial.print("Replaced "); Serial.print(x[i]); Serial.print(" with "); Serial.println(wMedian);
         }
-        else out[i] = x[i];
+        else outputData[i] = x[i];
     }
-
-    return out;
 }

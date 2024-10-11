@@ -13,7 +13,7 @@
 
 #define WINDOW_SIZE (6)  // You can adjust this based on your requirements
 #define HALF_WINDOW_SIZE (WINDOW_SIZE / 2)
-#define THRESHOLD_MULTIPLIER 3  // Threshold multiplier (usually set to 3 for outliers)
+#define THRESHOLD_MULTIPLIER 1  // Threshold multiplier (usually set to 3 for outliers)
 
 // *****************************************************************************
 // *****************************************************************************
@@ -35,6 +35,6 @@ float median(uint16_t* x, uint16_t n);
 
 float mode(uint16_t *x, uint16_t n);
 
-uint16_t*  hampel(uint16_t *x, uint16_t n);
+void hampel(uint16_t *x, uint16_t n);
 
 #endif
