@@ -8,7 +8,6 @@
 // *****************************************************************************
 /* This section lists the other files that are included in this file.
 */
-
 #include <avr/io.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>

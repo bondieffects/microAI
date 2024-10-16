@@ -11,9 +11,16 @@
 #include <Arduino.h>
 #include <stdlib.h>  // For qsort()
 
-#define WINDOW_SIZE (6)  // You can adjust this based on your requirements
+// *****************************************************************************
+// *****************************************************************************
+// Section: Macro definitions
+// *****************************************************************************
+// *****************************************************************************
+/* These following macros are defined for the statistical functions
+*/
+#define WINDOW_SIZE (6)  // The window size for the Hampel Filter
 #define HALF_WINDOW_SIZE (WINDOW_SIZE / 2)
-#define THRESHOLD_MULTIPLIER 1  // Threshold multiplier (usually set to 3 for outliers)
+#define THRESHOLD_MULTIPLIER 1  // How many absolute deviations from the median before filtering? Typically 3
 
 // *****************************************************************************
 // *****************************************************************************
