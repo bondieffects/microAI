@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <noise.h>
 #include <statistics.h>
+#include <fir.h>
 
 extern uint16_t *outputData;
 
@@ -9,6 +10,8 @@ extern uint16_t *outputData;
 ISR(ADC_vect){
 
 }
+
+FIRFilter lpf;
 
 
 void setup() {
@@ -37,9 +40,21 @@ void setup() {
   val = mode(inputData, n);
   Serial.print("mode: "); Serial.println(val);*/
 
+  //// HAMPEL DEMO ////
   // Allocate some memory for the output array
-  outputData = (uint16_t *)malloc(n * sizeof(uint16_t));
-  hampel(inputData, n);
+  //outputData = (uint16_t *)malloc(n * sizeof(uint16_t));
+  //hampel(inputData, n);
+
+  //// FIR DEMO ////
+  FIRFilter_Init(&lpf);
+
+  for (uint16_t i = 0; i < n; i++) {
+    outputData[i] = FIRFilter_Update(&lpf, inputData[i]);
+  }
+  
+
+
+  // Print the output
   Serial.print(">");
   Serial.print("inputData:"); 
   Serial.print(inputData[0]);
