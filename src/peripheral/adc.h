@@ -56,24 +56,29 @@ void ADC_Awake( void );
 void ADC_SetPrescaler(uint8_t prescaler) 
 {
     switch (prescaler) {
-        case PRESCALER_2:
-        ADCSRA |= ()
+        ADCSRA &= ~((1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0));
+        case PRESCALER_2;
+
         break;
-        case PRESCALER_4:   
-        ADCSRA |= ()
+            case PRESCALER_4:   
+            ADCSRA |=  (1 << ADPS1) ;
+        break;
+            case PRESCALER_8:
+            ADSCRA |=  (1 << ADPS1) | (1 << ADPS0);
         break;
         case PRESCALER_16:
-        ADCSRA |= ()
-        break;
+            ADCSRA |= (1 << ADPS2);
+            break;
         case PRESCALER_32:  
-        ADCSRA |= ()
-        break;
+            ADCSRA |= (1 << ADPS2) | (1 << ADPS0);
+            break;
         case PRESCALER_64:
             // set registers for a prescaler of 64
-            ADCSRA |= (1 << ADIE) | (1 << ADPS1) | (1 << ADPS0);
+            ADCSRA |= (1 << ADPS2) | (1 << ADPS1);
             break;
         case PRESCALER_128:
             //
+            ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
             break;
     }
 }
