@@ -28,8 +28,13 @@
 */
 
 enum Prescalers {
+    PRESCALER_2,
+    PRESCALER_4,
+    PRESCALER_8,
+    PRESCALER_16,
+    PRESCALER_32,
     PRESCALER_64,
-    PRESCALER_256,
+    PRESCALER_128,
 };
 
 void ADC_Initialise( void );
@@ -51,11 +56,23 @@ void ADC_Awake( void );
 void ADC_SetPrescaler(uint8_t prescaler) 
 {
     switch (prescaler) {
+        case PRESCALER_2:
+        ADCSRA |= ()
+        break;
+        case PRESCALER_4:   
+        ADCSRA |= ()
+        break;
+        case PRESCALER_16:
+        ADCSRA |= ()
+        break;
+        case PRESCALER_32:  
+        ADCSRA |= ()
+        break;
         case PRESCALER_64:
             // set registers for a prescaler of 64
             ADCSRA |= (1 << ADIE) | (1 << ADPS1) | (1 << ADPS0);
             break;
-        case PRESCALER_256:
+        case PRESCALER_128:
             //
             break;
     }
