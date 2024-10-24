@@ -9,15 +9,6 @@
 
 // *****************************************************************************
 // *****************************************************************************
-// Section: Global Variables
-// *****************************************************************************
-// *****************************************************************************
-/* This section lists the other files that are included in this file.
-*/
-uint16_t *outputData;
-
-// *****************************************************************************
-// *****************************************************************************
 // Section: Interface Routines
 // *****************************************************************************
 // *****************************************************************************
@@ -26,15 +17,15 @@ uint16_t *outputData;
 */
 
 /*! @brief Returns the mean of an array
-    @param x the input array
+    @param inp the input array
     @param n the length of the array
 */
-float mean(uint16_t* x, uint16_t n) {
+float mean(float* inp, uint16_t n) {
 
   float sum = 0;
 
   for (uint16_t i; i < n; i++) {
-    sum+= x[i];
+    sum+= inp[i];
   }
   Serial.print("sum: "); Serial.println(sum);
 
@@ -42,17 +33,17 @@ float mean(uint16_t* x, uint16_t n) {
 }
 
 /*! @brief Returns the variance of an array
-    @param x the input array
+    @param inp the input array
     @param n the length of the array
     @param mean the mean of the array
 */
-float variance(uint16_t* x, uint16_t n, float mean) {
+float variance(float* inp, uint16_t n, float mean) {
 
   float var = 0;
 
   // Step 2: Calculate the variance
   for (uint16_t i = 0; i < n; i++) {
-      var += (x[i] - mean) * (x[i] - mean);
+      var += (inp[i] - mean) * (inp[i] - mean);
   }
   var /= n; // For population variance
   // variance /= (n - 1); // For sample variance
@@ -76,15 +67,14 @@ int compare(const void* a, const void* b)
 }
 
 /*! @brief Returns the median of an array
-    @param x the input array
+    @param inp the input array
     @param n the length of the input array
 */
-float median(uint16_t* x, uint16_t n)
+float median(float* inp, uint16_t n)
 {
-    
     uint16_t *temp = (uint16_t *)malloc(sizeof(uint16_t) * n);
     for (uint16_t i = 0; i < n; i++) {
-        temp[i] = x[i];
+        temp[i] = inp[i];
     }
 
     // Sort the array in ascending order
@@ -103,14 +93,14 @@ float median(uint16_t* x, uint16_t n)
 }
 
 /*! @brief Returns the mode of an array
-    @param x the input array
+    @param inp the input array
     @param n the length of the input array
 */
-float mode(uint16_t *x, uint16_t n) {
+float mode(float *inp, uint16_t n) {
 
     uint16_t *temp = (uint16_t *)malloc(sizeof(uint16_t) * n);
     for (uint16_t i = 0; i < n; i++) {
-        temp[i] = x[i];
+        temp[i] = inp[i];
     }
 
     // Sort the array
@@ -148,50 +138,113 @@ float mode(uint16_t *x, uint16_t n) {
     return mode;
 }
 
+void Hampel_Initialise(HampelFilter *hampel)
+{
+  // Clear the filter buffer
+    for (uint8_t n=0; n < HAMPEL_FILTER_LENGTH; n++) {
+        hampel->out[n] = 0.0f;
+    }
+    hampel->hampelState = INIT;
+    hampel->currentIndex = 0;
+    hampel->count = 0;
+    hampel->wMedian = 0.0;
+    hampel->medAbsDev = 0.0;
+}
+
 /*! @brief Hampel Outlier Filter:
     Divide the input array into windows of N samples.
     If a sample is more than 3 absolute deviations
     from the window median, replace it with the window median.
-    @param x the input array
-    @param n the length of the input array
+
+
+    1. Calculate the median from the last N samples
+    2. Calculate the standard deviation of the last N samples
+    3. If the sample is greater than M absolute deviations replace it with the median
+
+    @param buffer a pointer to the input Ring Buffer instance
     @returns a pointer to an output array
 */
-void hampel(uint16_t *x, uint16_t n) 
+float *Hampel_Filter(RingBuffer *buffer, HampelFilter *hampel) 
 {
     // Instantiate an array for the window
-    uint16_t window[WINDOW_SIZE];
+    float window[WINDOW_SIZE];
     // Instantiate an array for the absolute deviation
-    uint16_t absDev[WINDOW_SIZE];
+    float absDev[WINDOW_SIZE];
 
     // Iterate through the input array
-    for (uint16_t i = 0; i < n; i++) {
+    for (uint16_t i = 0; i < buffer->n; i++) {
 
         // Populate the window
         uint16_t count = 0;
-        for (uint16_t j = max(0, i - HALF_WINDOW_SIZE); j <= min(n - 1, i + HALF_WINDOW_SIZE); j++) {
-            window[count++] = x[j];
+        for (uint16_t j = max(0, i - HALF_WINDOW_SIZE); j <= min(buffer->n - 1, i + HALF_WINDOW_SIZE); j++)  {
+            window[count++] = buffer->buf[j];
         }
 
         // Calculate the median of the window
         float wMedian = median(window, count);
 
-        // Estimate the standard deviation of each sample
-        // about its window median using the median absolute deviation.
+        // Estimate the standard deviation of each sample about its window median using the median absolute deviation.
         for (uint16_t j = 0; j < count; j++) {
             absDev[j] = abs(window[j] - wMedian);       // Calculate the absolute deviations from the median
         }
 
         float medAbsDev = median(absDev, count);        // Calculate the median of the absolute deviations
 
-
         // How many absolute deviations should the threshold be?
         float threshold = THRESHOLD_MULTIPLIER * medAbsDev;
 
         // If a sample differs from the median by more than the threshold, it is replaced with the median.
-        if (abs(x[i] - wMedian) > threshold) {
-            outputData[i] = wMedian;
-            //Serial.print("Replaced "); Serial.print(x[i]); Serial.print(" with "); Serial.println(wMedian);
+        if (abs(buffer->buf[i] - wMedian) > threshold) {
+            hampel->out[i] = wMedian;
+            //Serial.print("Replaced "); Serial.print(inp[i]); Serial.print(" with "); Serial.println(wMedian);
         }
-        else outputData[i] = x[i];
+        else hampel->out[i] = buffer->buf[i];
+    } // end for loop
+    return hampel->out;
+}
+
+float *Hampel_Filter_NonBlocking(RingBuffer *buffer, HampelFilter *hampel) {
+    switch (hampel->hampelState) {
+        case INIT:
+            hampel->currentIndex = 0;
+            hampel->hampelState = FILL_WINDOW;
+            break;
+
+        case FILL_WINDOW:
+            hampel->count = 0;
+            for (uint16_t j = max(0, hampel->currentIndex - HALF_WINDOW_SIZE); j <= min(buffer->n - 1, hampel->currentIndex + HALF_WINDOW_SIZE); j++) {
+                hampel->window[hampel->count++] = buffer->buf[j];
+            }
+            hampel->hampelState = CALC_MEDIAN;
+            break;
+
+        case CALC_MEDIAN:
+            hampel->wMedian = median(hampel->window, hampel->count);
+            for (uint16_t j = 0; j < hampel->count; j++) {
+                hampel->absDev[j] = abs(hampel->window[j] - hampel->wMedian);
+            }
+            hampel->medAbsDev = median(hampel->absDev, hampel->count);
+            hampel->hampelState = CHECK_OUTLIERS;
+            break;
+
+        case CHECK_OUTLIERS:
+            float threshold = THRESHOLD_MULTIPLIER * hampel->medAbsDev;
+            if (abs(buffer->buf[hampel->currentIndex] - hampel->wMedian) > threshold) {
+                hampel->out[hampel->currentIndex] = hampel->wMedian;
+            } else {
+                hampel->out[hampel->currentIndex] = buffer->buf[hampel->currentIndex];
+            }
+            hampel->currentIndex++;
+            if (hampel->currentIndex >= buffer->n) {
+                hampel->hampelState = DONE;
+            } else {
+                hampel->hampelState = FILL_WINDOW;
+            }
+            break;
+
+        case DONE:
+            hampel->hampelState = INIT; // Reset state for the next run
+            return hampel->out;
     }
+    return NULL;  // Not finished yet
 }
