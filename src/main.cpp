@@ -1,28 +1,43 @@
 #include <Arduino.h>
-#include <noise.h>
-#include <statistics.h>
+#include <HampelFilter.h>
+
+// Create a Hampel filter object with a window size of 5 and a threshold of 3
+//HampelFilter filter(5, 3.0);
+//#include <noise.h>
+//#include <statistics.h>
+
 #include <fir.h>
+#include <ringbuffer.h>
+RingBuffer rb;
+FIRFilter lpf;
 
-extern uint16_t *outputData;
-
+/*
 //Interrupt Service Routine(ISR) handle interupt when complete
 //microcontroller wake up from sleep, main program continue
 ISR(ADC_vect){
-
 }
+*/
 
-FIRFilter lpf;
 
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  Serial.println("Setup begun");
 
 
-  uint16_t *inputData = hampelNoise;
-  uint16_t n = sizeof(hampelNoise) / sizeof(uint16_t);
+  // Initialise the ring buffer
+  //RingBuffer_Initialise(&rb);
 
-  //n /= sizeof(uint16_t);
+  // Initialise the hampel filter
+  //Hampel_Initialise(&hampel);
+
+  //// HAMPEL DEMO ////
+  // Allocate some memory for the output array
+  //hampel(inputData, n);
+  //// END HAMPEL DEMO /////
+
+  //uint16_t n = BUFFER_SIZE * sizeof(uint16_t);
   /*
   Serial.print("n: "); Serial.println(n);
   float val = mean(inputData, n);
@@ -40,20 +55,18 @@ void setup() {
   val = mode(inputData, n);
   Serial.print("mode: "); Serial.println(val);*/
 
-  //// HAMPEL DEMO ////
-  // Allocate some memory for the output array
-  //outputData = (uint16_t *)malloc(n * sizeof(uint16_t));
-  //hampel(inputData, n);
-
-  //// FIR DEMO ////
+  /*
   FIRFilter_Init(&lpf);
-
   for (uint16_t i = 0; i < n; i++) {
     outputData[i] = FIRFilter_Update(&lpf, inputData[i]);
   }
-  
+  */
 
+  /*
+  //// FIR DEMO ////
 
+  */
+  /*
   // Print the output
   Serial.print(">");
   Serial.print("inputData:"); 
@@ -73,12 +86,34 @@ void setup() {
     Serial.println();
     delay(10);
   }
-  
-
+  */
 }
+
+uint32_t t = 0;
+uint32_t printTimer = 0;
+#define PRINT_INTERVAL (100)
 
 void loop() {
   // put your main code here, to run repeatedly:
+  //t = millis();
+  uint16_t val = analogRead(A0); 
+  RingBuffer_Push(&rb, (float)val);
+  float out = FIRFilter_Update(&lpf, rb.buf[rb.writeHead]);
+
+  //float sensorValue = analogRead(A0);
+  // Process the sensor value with the Hampel filter
+  //float filteredValue = filter.process(sensorValue);
+
+  if (t - printTimer > PRINT_INTERVAL) {
+    printTimer = millis();
+
+    // Output the result
+    Serial.print(">");
+    Serial.print("OriginalValue:");
+    Serial.print(val);
+    Serial.print(", FilteredValue:");
+    Serial.println(out);
+  }
 
 }
 
