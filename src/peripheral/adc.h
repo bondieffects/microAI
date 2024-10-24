@@ -49,14 +49,23 @@ void ADC_ConversionStart( void );
 
 uint16_t ADC_ConversionResultGet( void );
 
+void ADC_InterruptsClear(uint8_t interruptMask);
+
+void ADC_InterruptsEnable(uint8_t interruptMask);
+
+void ADC_InterruptsDisable(uint8_t interruptMask);
+
 void ADC_EnterSleep( void );
 
 void ADC_Awake( void );
+
+
 
 void ADC_SetPrescaler(uint8_t prescaler) 
 {
     switch (prescaler) {
         ADCSRA &= ~((1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0));
+        
         case PRESCALER_2;
 
         break;
