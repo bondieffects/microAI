@@ -31,13 +31,13 @@
 // Sample Rate ≈ (FCPU / PRESCALER) / 13 ≈ 9,615 samples per second (Hz).
 // ADC conversion takes 13 clock cycles
 enum Prescalers {
-    PRESCALER_2,        // Sample Rate: 615385Hz
-    PRESCALER_4,        // Sample Rate: 307692Hz
-    PRESCALER_8,        // Sample Rate: 153846Hz
-    PRESCALER_16,       // Sample Rate: 76923Hz
-    PRESCALER_32,       // Sample Rate: 38462Hz
-    PRESCALER_64,       // Sample Rate: 19231Hz
-    PRESCALER_128,      // Sample Rate: 9615Hz
+    PRESCALER_2,        // Sample Rate: 615385 Hz
+    PRESCALER_4,        // Sample Rate: 307692 Hz
+    PRESCALER_8,        // Sample Rate: 153846 Hz
+    PRESCALER_16,       // Sample Rate: 76923 Hz
+    PRESCALER_32,       // Sample Rate: 38462 Hz
+    PRESCALER_64,       // Sample Rate: 19231 Hz
+    PRESCALER_128,      // Sample Rate: 9615 Hz
 };
 
 void ADC_Initialise( void );
