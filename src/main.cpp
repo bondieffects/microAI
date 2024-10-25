@@ -3,13 +3,18 @@
 
 // SAMPLE RATE 9615 HZ //
 
-// #define FIR 1
-//#define IIR 1
-#define HAMPEL 1
+//#define DEBUG_PRINTS 1
+//#define FIR 1
+#define IIR 1
+//#define HAMPEL 1
+
 
 uint32_t t = 0;
-uint32_t printTimer = 0;
-#define PRINT_INTERVAL (100)
+
+#ifdef DEBUG_PRINTS
+  uint32_t printTimer = 0;
+  #define PRINT_INTERVAL (100)
+#endif
 
 #ifdef FIR
   #include <FIRFilter.h>
@@ -25,7 +30,7 @@ uint32_t printTimer = 0;
 
 #ifdef HAMPEL
   // Create a Hampel filter object with a window size of 5 and a threshold of 1
-  HampelFilter hampel(5, 1);
+  HampelFilter hampel(10, 1);
 
   // Hampel works best if we give it enough time to create an outlier
   #define HAMPEL_INTERVAL (500)
@@ -34,8 +39,12 @@ uint32_t printTimer = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial.println("Setup begun");
+  #ifdef DEBUG_PRINTS
+    Serial.begin(115200);
+    Serial.println("Setup begun");
+  #endif
+
+  //analogWrite(3, 127);
 }
 
 
@@ -64,21 +73,19 @@ void loop() {
   #endif
 
 
+  #ifdef DEBUG_PRINTS
 
-  //float sensorValue = analogRead(A0);
-  // Process the sensor value with the Hampel filter
-  //float filteredValue = filter.process(sensorValue);
+    if (t - printTimer > PRINT_INTERVAL) {
+      printTimer = millis();
 
-  if (t - printTimer > PRINT_INTERVAL) {
-    printTimer = millis();
-
-    // Output the result
-    Serial.print(">");
-    Serial.print("OriginalValue:");
-    Serial.print(input);
-    Serial.print(", FilteredValue:");
-    Serial.println(output);
-  }
+      // Output the result
+      Serial.print(">");
+      Serial.print("OriginalValue:");
+      Serial.print(input);
+      Serial.print(", FilteredValue:");
+      Serial.println(output);
+    }
+  #endif
 
 }
 
