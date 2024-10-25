@@ -3,11 +3,12 @@
 
 // SAMPLE RATE 9615 HZ //
 
-//#define DEBUG_PRINTS 1
+#define DEBUG_PRINTS 1
 //#define FIR 1
-#define IIR 1
+//#define IIR 1
 //#define HAMPEL 1
 
+#define MA 1
 
 uint32_t t = 0;
 
@@ -37,6 +38,15 @@ uint32_t t = 0;
   uint32_t hampelTimer = 0;
 #endif
 
+#ifdef MA
+  #include "MAFilter.h"
+  const int n = 40;
+  int8_t read = n/2;
+  int8_t write = 0;
+  MAFilter Mafilter(n);
+  int16_t delayhold[n];
+#endif
+
 void setup() {
   // put your setup code here, to run once:
   #ifdef DEBUG_PRINTS
@@ -44,6 +54,12 @@ void setup() {
     Serial.println("Setup begun");
   #endif
 
+  // MA filter delays output, so this shifts graph back inline
+  #ifdef MA 
+  for(int i = 0; i < n; i++){
+    delayhold[i] = 0;
+  }
+  #endif
   //analogWrite(3, 127);
 }
 
@@ -72,8 +88,25 @@ void loop() {
     }
   #endif
 
+  #ifdef MA
+    output = Mafilter.process(input);
+  #endif
 
   #ifdef DEBUG_PRINTS
+
+        // MA filter is delayed, so this shifts graph back inline.
+    #ifdef MA
+      delayhold[write] = input;
+      write++;
+      if(write >= n){
+          write= 0;
+      }
+      input = delayhold[read];
+      read++;
+      if(read >= n){
+          read = 0;
+       }
+    #endif
 
     if (t - printTimer > PRINT_INTERVAL) {
       printTimer = millis();
@@ -81,8 +114,8 @@ void loop() {
       // Output the result
       Serial.print(">");
       Serial.print("OriginalValue:");
-      Serial.print(input);
-      Serial.print(", FilteredValue:");
+      Serial.println(input);
+      Serial.print("> FilteredValue:");
       Serial.println(output);
     }
   #endif
