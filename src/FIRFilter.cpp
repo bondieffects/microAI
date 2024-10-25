@@ -5,7 +5,7 @@
     @param filter a pointer to the filter coefficients
     @param n_taps the number of taps (order) of the filter
 */
-FIRFilter::FIRFilter(int16_t *filter, uint8_t n_taps) {
+FIRFilter::FIRFilter(int32_t *filter, uint8_t n_taps) {
     this->n_taps = n_taps;
     this->filter = filter;
     this->buffer = new int16_t[n_taps];  // Allocate buffer for previous inputs
