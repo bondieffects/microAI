@@ -12,8 +12,7 @@ FIRFilter::FIRFilter(int32_t *IR, uint8_t taps)
     this->IR = IR;
     this->taps = taps;
 
-    x = (int16_t *)malloc(taps * sizeof(int16_t));
-    memset(x, 0, taps * sizeof(int16_t));
+    x = (int16_t *)calloc(taps, sizeof(int16_t));
 }
 
 /*! @brief Destructor: Free up memory allocated to the buffer

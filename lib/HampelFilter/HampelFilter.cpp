@@ -10,7 +10,7 @@ HampelFilter::HampelFilter(void)
     threshold = 3;
     index = 0;
 
-    window = (int16_t *)malloc(windowLength * sizeof(int16_t));
+    window = (int16_t *)calloc(windowLength, sizeof(int16_t));
     windowReady = false;
 }
 
@@ -26,8 +26,7 @@ HampelFilter::HampelFilter(uint8_t windowLength, uint8_t threshold)
     if (threshold > 0) this->threshold = threshold;
     index = 0;
 
-    window = (int16_t *)malloc(windowLength * sizeof(int16_t));
-    memset(window, 0, windowLength * sizeof(int16_t));
+    window = (int16_t *)calloc(windowLength, sizeof(int16_t));
     windowReady = false;
 }
 

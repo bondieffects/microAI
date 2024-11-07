@@ -4,11 +4,10 @@
 // SAMPLE RATE 9615 HZ //
 
 #define DEBUG_PRINTS 1
-#define FIR 1
+//#define FIR 1
 //#define IIR 1
 //#define HAMPEL 1
-
-//#define MA 1
+#define MA 1
 
 uint32_t t = 0;
 

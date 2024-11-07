@@ -16,12 +16,10 @@ IIRFilter::IIRFilter(int32_t *a, int32_t *b, uint8_t order) {
     this->order = order;
 
     // For an order of n, the input buffer is x[n+1]
-    x = (int32_t *)malloc((order + 1) * sizeof(int32_t));
-    memset(x, 0, (order + 1) * sizeof(int32_t));
+    x = (int32_t *)calloc((order + 1), sizeof(int32_t));
 
     // For an order of n, the previous output buffer is Y[n]
-    Y = (int32_t *)malloc(order * sizeof(int32_t));
-    memset(Y, 0, order * sizeof(int32_t));
+    Y = (int32_t *)calloc(order, sizeof(int32_t));
 }
 
 /*! @brief Destructor: Free up the memory allocated to the buffers.

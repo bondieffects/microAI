@@ -11,8 +11,7 @@ MAFilter::MAFilter(uint8_t taps)
 {
     this->taps = (taps + 1);
     index = 0;
-    x = (int16_t *)malloc((taps + 1) * sizeof(int16_t));
-    memset(x, 0, (taps + 1) * sizeof(int16_t));
+    x = (int16_t *)calloc((taps + 1), sizeof(int16_t));
 }
 
 /*! @brief Destructor: Free up memory allocated to the buffer
