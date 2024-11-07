@@ -1,29 +1,18 @@
 #include "HampelFilter.h"
 
-/*! @brief Default Constructor: Initialise the Hampel Filter object
-           with a default window length of 5 and threshold of 3.
-           Allocate some memory for the window.
- */
-HampelFilter::HampelFilter(void)
-{
-    windowLength = 5;
-    threshold = 3;
-    index = 0;
-
-    window = (int16_t *)calloc(windowLength, sizeof(int16_t));
-    windowReady = false;
-}
-
 /*! @brief Constructor: Initialise the Hampel Filter object with the
            specified window length and threshold.
            Allocate some memory for the window.
     @param windowLength The length of the window.
     @param threshold How many median absolute deviations makes an outlier?
 */
-HampelFilter::HampelFilter(uint8_t windowLength, uint8_t threshold)
+HampelFilter::HampelFilter(uint8_t windowLength, float threshold)
 {
     if (windowLength > 0) this->windowLength = windowLength;
-    if (threshold > 0) this->threshold = threshold;
+
+    // Scale the threshold so we can use int math in the filter loop
+    scaledThreshold = uint16_t(threshold * 256);
+
     index = 0;
 
     window = (int16_t *)calloc(windowLength, sizeof(int16_t));
@@ -69,10 +58,13 @@ int16_t HampelFilter::filter(int16_t input)
     int16_t mad = getMAD(window, n, median);
 
     // Calculate the absolute difference from the median
-    int16_t delta = abs(input - median);
+    uint32_t delta = abs(input - median) << 8;
 
     // If the number is an outlier return the median
-    if (delta > (mad * threshold)) return median;
+    uint32_t outlierThreshold = mad * scaledThreshold;
+
+    if (delta > outlierThreshold) return median;
+
     else return input;
 }
 

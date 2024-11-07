@@ -3,11 +3,11 @@
 
 // SAMPLE RATE 9615 HZ //
 
-#define DEBUG_PRINTS 1
+//#define DEBUG_PRINTS 1
 //#define FIR 1
 //#define IIR 1
-//#define HAMPEL 1
-#define MA 1
+#define HAMPEL 1
+//#define MA 1
 
 uint32_t t = 0;
 
@@ -30,8 +30,8 @@ uint32_t t = 0;
 
 #ifdef HAMPEL
   #include <HampelFilter.h>
-  // Create a Hampel filter object with a window size of 5 and a threshold of 1
-  HampelFilter hampel(10, 1);
+  // Create a Hampel filter object with a window size of 5 and a threshold of 3.0
+  HampelFilter hampel(5, 3.0f);
 
   // Hampel works best if we give it enough time to create an outlier
   #define HAMPEL_INTERVAL (500)
