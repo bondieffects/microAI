@@ -3,7 +3,7 @@
 
 // SAMPLE RATE 9615 HZ //
 
-//#define DEBUG_PRINTS 1
+#define DEBUG_PRINTS 1
 //#define FIR 1
 //#define IIR 1
 #define HAMPEL 1
@@ -19,19 +19,19 @@ uint32_t t = 0;
 #ifdef FIR
   #include <FIRFilter.h>
   // Create FIRFilter object with the coefficients, number of taps, and scaling factor
-  FIRFilter fir(LPF_2000HZ, 64);
+  FIRFilter fir(LPF_500HZ, 64);
 #endif
 
 #ifdef IIR
   #include "IIRFilter.h"
   // Initialize the filter with the coefficients and order (2 for a second-order filter)
-  IIRFilter iir(LPF_2KHZ_A, LPF_2KHZ_B, 2);
+  IIRFilter iir(LPF_500HZ_A, LPF_500HZ_B, 2);
 #endif
 
 #ifdef HAMPEL
   #include <HampelFilter.h>
   // Create a Hampel filter object with a window size of 5 and a threshold of 3.0
-  HampelFilter hampel(5, 3.0f);
+  HampelFilter hampel(5, 1.0f);
 
   // Hampel works best if we give it enough time to create an outlier
   #define HAMPEL_INTERVAL (500)
@@ -69,7 +69,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   t = millis();
 
-  int16_t input = Serial.parseInt();
+  int16_t input = analogRead(A0);//Serial.parseInt();
   int32_t output;
 
   #ifdef FIR
@@ -107,16 +107,16 @@ void loop() {
        }
     #endif
 
-    //if (t - printTimer > PRINT_INTERVAL) {
-      //printTimer = millis();
+    if (t - printTimer > PRINT_INTERVAL) {
+      printTimer = millis();
 
       // Output the result
-      //Serial.print(">");
-      //Serial.print("OriginalValue:");
-      //Serial.println(input);
-      //Serial.print("> FilteredValue:");
+      Serial.print(">");
+      Serial.print("RawData:");
+      Serial.println(input);
+      Serial.print(">FilteredData:");
       Serial.println(output);
-    //}
+    }
   #endif
 
 }
