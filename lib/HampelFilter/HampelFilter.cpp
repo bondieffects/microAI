@@ -10,7 +10,7 @@ HampelFilter::HampelFilter(uint8_t windowLength, float threshold)
 {
     if (windowLength > 0) this->windowLength = windowLength;
 
-    // Scale the threshold so we can use int math in the filter loop
+    // Scale the threshold so we can use int maths in the filter loop
     scaledThreshold = uint16_t(threshold * 256);
 
     index = 0;
@@ -42,7 +42,7 @@ int16_t HampelFilter::filter(int16_t input)
     // Confirm that window memory has been allocated before proceeding
     if (window == NULL) return input;
 
-    // Update the window
+    // Update the window buffer
     window[index] = input;
     index = (index + 1) % windowLength;
     if (index == 0) windowReady = true;
@@ -57,7 +57,7 @@ int16_t HampelFilter::filter(int16_t input)
     // Calculate the window median absolute deviation
     int16_t mad = getMAD(window, n, median);
 
-    // Calculate the absolute difference from the median
+    // Calculate the absolute difference from the median, and scale it by 256
     uint32_t delta = abs(input - median) << 8;
 
     // If the number is an outlier return the median
